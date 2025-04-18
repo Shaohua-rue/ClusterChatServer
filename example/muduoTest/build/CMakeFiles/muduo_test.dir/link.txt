@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/muduo_test.dir/main.cpp.o -o muduo_test   -L/home/shaohua/chat/example/muduoTest/../../lib  -Wl,-rpath,/home/shaohua/chat/example/muduoTest/../../lib -lmuduo_core -lpthread 
