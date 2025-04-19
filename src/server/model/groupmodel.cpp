@@ -1,5 +1,5 @@
 #include "groupmodel.hpp"
-#include "db.h"
+//#include "db.h"
 
 //创建群组
 bool GroupModel::createGroup(Group &group)
@@ -7,12 +7,13 @@ bool GroupModel::createGroup(Group &group)
     char sql[1024] = {0};
     sprintf(sql,"insert into allgroup(groupname,groupdesc) values('%s','%s')",group.getName().c_str(),group.getDesc().c_str());
 
-    MySQL mysql;
-    if(mysql.connect())
+    //MySQL mysql;
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        if(mysql.update(sql))
+        if(conn->update(sql))
         {
-            group.setId(mysql_insert_id(mysql.getConnection()));
+            group.setId(mysql_insert_id(conn->getConnection()));
             return true;
         }
     }
@@ -26,10 +27,10 @@ void GroupModel::addGroup(int userid,int groupid, std::string role)
     char sql[1024] = {0};
     sprintf(sql,"insert into groupuser values('%d','%d','%s')",groupid,userid,role.c_str());
 
-    MySQL mysql;
-    if(mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        mysql.update(sql);
+        conn->update(sql);
     }
 }
 
@@ -45,10 +46,10 @@ std::vector<Group> GroupModel::queryGroups(int userid)
    sprintf(sql, "select a.id,a.groupname,a.groupdesc from allgroup a inner join groupuser b on a.id = b.groupid where b.userid=%d",
        userid);
     vector<Group> groupVec;
-    MySQL mysql;
-    if(mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if(res != nullptr)
         {
             MYSQL_ROW row;
@@ -70,7 +71,7 @@ std::vector<Group> GroupModel::queryGroups(int userid)
     {
         sprintf(sql, "select a.id,a.name,a.state,b.grouprole from user a inner join groupuser b on b.userid = a.id where b.groupid=%d",
                 group.getId());
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res =conn->query(sql);
         if(res != nullptr)
         {
             MYSQL_ROW row;
@@ -97,10 +98,10 @@ std::vector<int> GroupModel::queryGroupUsers(int userid,int groupid)
 
     vector<int> idVec;
 
-    MySQL mysql;
-    if(mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if(res != nullptr)
         {
             MYSQL_ROW row;

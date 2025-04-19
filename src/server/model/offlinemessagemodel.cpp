@@ -1,5 +1,5 @@
 #include "offlinemessagemodel.hpp"
-#include "db.h"
+//#include "db.h"
 
 
 // 存储用户的离线消息
@@ -8,10 +8,10 @@ void OfflineMsgModel::insert(int userid, string msg)
     //组装sql语句
     char sql[1024] = {0};
     sprintf(sql, "insert into offlinemessage values(%d,'%s')", userid, msg.c_str());
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        mysql.update(sql);
+        conn->update(sql);
     }
 }
 
@@ -22,10 +22,10 @@ vector<string> OfflineMsgModel::query(int userid)
     sprintf(sql, "select message from offlinemessage where userid = %d", userid);
 
     vector<string> vec;
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if (res != nullptr)
         {
             //查询成功
@@ -47,9 +47,9 @@ void OfflineMsgModel::remove(int userid)
     //组装sql语句
     char sql[1024] = {0};
     sprintf(sql, "delete from offlinemessage where userid = %d", userid);
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        mysql.update(sql);
+        conn->update(sql);
     }
 }

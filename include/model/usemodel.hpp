@@ -1,8 +1,11 @@
 #pragma once
 #include "user.hpp"
+#include "Connection.h"
+#include "dbConnnectionPool.h"
 //user表的数据操作类
 class UserModel {
 public:
+    UserModel():pool (ConnectionPool::getConnectionPool()){}
     // 注册新用户
     bool insert(User &user);
 
@@ -14,4 +17,6 @@ public:
 
     // 重置用户的状态信息
     void resetState();
+private:
+    ConnectionPool* pool;
 };

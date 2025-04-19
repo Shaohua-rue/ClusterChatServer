@@ -1,10 +1,12 @@
 #pragma once 
-#include "db.h"
 #include <string>
 #include <vector>
+#include "Connection.h"
+#include "dbConnnectionPool.h"
 class OfflineMsgModel
 {
 public:
+    OfflineMsgModel():pool (ConnectionPool::getConnectionPool()){}
     // 存储用户的离线消息
     void insert(int userid, string msg);
 
@@ -13,4 +15,6 @@ public:
 
     // 移除用户的离线消息
     void remove(int userid);
+private:
+    ConnectionPool* pool;
 };

@@ -1,6 +1,7 @@
 #include "usemodel.hpp"
-#include "db.h"
+//#include "db.h"
 #include <iostream>
+#include "Logger.h"
 // 注册新用户
 bool UserModel::insert(User &user)
 {
@@ -9,13 +10,13 @@ bool UserModel::insert(User &user)
     snprintf(sql, sizeof(sql), "insert into user(name, password, state) values('%s', '%s', '%s')",
              user.getName().c_str(), user.getPwd().c_str(), user.getState().c_str());
              
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        if (mysql.update(sql))
+        if (conn->update(sql))
         {
             //获取插入成功的用户数据生成的主键
-            user.setId(mysql_insert_id(mysql.getConnection()));
+            user.setId(mysql_insert_id(conn->getConnection()));
             return true;
         }
     }
@@ -29,11 +30,10 @@ User UserModel::query(int id)
     //1.组装sql语句
     char sql[1024] = {0};
     snprintf(sql, sizeof(sql), "select * from user where id = %d", id);
-
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        MYSQL_RES* res= mysql.query(sql);
+        MYSQL_RES* res= conn->query(sql);
         if (res != nullptr)
         {
             MYSQL_ROW row = mysql_fetch_row(res);   //获取一行数据
@@ -60,10 +60,10 @@ bool UserModel::updateState(User user)
      char sql[1024] = {0};
      sprintf(sql, "update user set state = '%s' where id = %d", user.getState().c_str(), user.getId());
  
-     MySQL mysql;
-     if (mysql.connect())
+     shared_ptr<Connection> conn = pool->getConnection();
+     if(conn->getConnectState())
      {
-         if (mysql.update(sql))
+         if (conn->update(sql))
          {
              return true;
          }
@@ -77,9 +77,9 @@ void UserModel::resetState()
     //1.组装sql语句
     char sql[1024] = "update user set state = 'offline' where state = 'online'";
 
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<Connection> conn = pool->getConnection();
+    if(conn->getConnectState())
     {
-        mysql.update(sql);
+        conn->update(sql);
     }
 }
